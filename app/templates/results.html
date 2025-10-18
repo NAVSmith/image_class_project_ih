@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification - Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .result-card {
+            transition: transform 0.2s;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+        .confidence-bar {
+            height: 8px;
+            border-radius: 4px;
+        }
+        .probability-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+        }
+        .probability-bar {
+            width: 60%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">
+                    <i class="fas fa-chart-bar"></i> Classification Results
+                </h1>
+                <div class="text-center mb-4">
+                    <a href="/" class="btn btn-outline-primary">
+                        <i class="fas fa-upload"></i> Upload More Images
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            {% for result in results %}
+            <div class="col-lg-6 col-xl-4 mb-4">
+                <div class="card result-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-file-image"></i> {{ result.filename }}
+                        </h6>
+                        {% if result.error %}
+                            <span class="badge bg-danger">Error</span>
+                        {% else %}
+                            <span class="badge bg-success">Success</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-body">
+                        {% if result.error %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i> {{ result.error }}
+                            </div>
+                        {% else %}
+                            <div class="text-center mb-3">
+                                <h4 class="text-primary">{{ result.prediction }}</h4>
+                                <div class="confidence-bar bg-light">
+                                    <div class="confidence-bar bg-primary" 
+                                         style="width: {{ result.confidence * 100 }}%"></div>
+                                </div>
+                                <small class="text-muted">
+                                    Confidence: {{ "%.1f"|format(result.confidence * 100) }}%
+                                </small>
+                            </div>
+
+                            <h6>All Probabilities:</h6>
+                            <div class="small">
+                                {% for class_name, prob in result.all_probabilities.items() %}
+                                <div class="probability-item">
+                                    <span>{{ class_name }}</span>
+                                    <div class="probability-bar">
+                                        <div class="probability-fill" 
+                                             style="width: {{ prob * 100 }}%"></div>
+                                    </div>
+                                    <span class="text-muted">{{ "%.1f"|format(prob * 100) }}%</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-info" 
+                                        onclick="showDetails('{{ result.filename }}')">
+                                    <i class="fas fa-info-circle"></i> Details
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if results %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie"></i> Summary Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-primary">{{ results|length }}</h3>
+                                    <small class="text-muted">Total Images</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-success">
+                                        {{ results|selectattr('prediction')|list|length }}
+                                    </h3>
+                                    <small class="text-muted">Successful</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-danger">
+                                        {{ results|selectattr('error')|list|length }}
+                                    </h3>
+                                    <small class="text-muted">Errors</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    {% set avg_confidence = (results|selectattr('confidence')|map(attribute='confidence')|list|sum / results|selectattr('confidence')|list|length) if results|selectattr('confidence')|list|length > 0 else 0 %}
+                                    <h3 class="text-info">{{ "%.1f"|format(avg_confidence * 100) }}%</h3>
+                                    <small class="text-muted">Avg. Confidence</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-download"></i> Export Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-outline-primary me-2" onclick="exportResults('json')">
+                            <i class="fas fa-file-code"></i> Export as JSON
+                        </button>
+                        <button class="btn btn-outline-success" onclick="exportResults('csv')">
+                            <i class="fas fa-file-csv"></i> Export as CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center">
+                    <h4>No results to display</h4>
+                    <p class="text-muted">Please upload some images first.</p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload Images
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Prediction Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const results = {{ results|tojson }};
+
+        function showDetails(filename) {
+            const result = results.find(r => r.filename === filename);
+            if (!result) return;
+
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <h6>File: ${result.filename}</h6>
+                <hr>
+                <p><strong>Prediction:</strong> ${result.prediction}</p>
+                <p><strong>Confidence:</strong> ${(result.confidence * 100).toFixed(2)}%</p>
+                <h6>Detailed Probabilities:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Probability</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(result.all_probabilities)
+                                .sort(([,a], [,b]) => b - a)
+                                .map(([className, prob]) => `
+                                    <tr>
+                                        <td>${className}</td>
+                                        <td>${prob.toFixed(4)}</td>
+                                        <td>${(prob * 100).toFixed(2)}%</td>
+                                    </tr>
+                                `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            modal.show();
+        }
+
+        function exportResults(format) {
+            const successfulResults = results.filter(r => !r.error);
+            
+            if (format === 'json') {
+                const dataStr = JSON.stringify(successfulResults, null, 2);
+                downloadFile(dataStr, 'classification_results.json', 'application/json');
+            } else if (format === 'csv') {
+                let csv = 'Filename,Prediction,Confidence\\n';
+                successfulResults.forEach(result => {
+                    csv += `"${result.filename}","${result.prediction}",${result.confidence}\\n`;
+                });
+                downloadFile(csv, 'classification_results.csv', 'text/csv');
+            }
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
