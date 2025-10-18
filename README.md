@@ -43,18 +43,28 @@ image_class_project_ih/
 
 ### 1. Environment Setup
 
+**Requirements:**
+
+- Python 3.11.9
+- TensorFlow 2.18.0 with Metal support for Apple Silicon
+
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd image_class_project_ih
 
-# Create virtual environment
-python -m venv venv
+# Create virtual environment with Python 3.11.9
+python3.11 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Upgrade pip
+pip install --upgrade pip
 
 # Install dependencies
 pip install -r requirements.txt
 ```
+
+**Note for Apple Silicon Macs:** This project uses `tensorflow-metal==1.1.0` for GPU acceleration on M1/M2/M3 chips.
 
 ### 2. Data Exploration
 
