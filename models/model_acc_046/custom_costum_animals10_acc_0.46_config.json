@@ -1,0 +1,16 @@
+{
+  "model_name": "Custom VGG16",
+  "dataset": "Animals10",
+  "input_shape": [
+    32,
+    32,
+    3
+  ],
+  "num_classes": 10,
+  "batch_size": 32,
+  "epochs_trained": 13,
+  "best_val_accuracy": 0.45830145478248596,
+  "final_val_accuracy": 0.45830145478248596,
+  "total_parameters": 356810,
+  "architecture": "VGG16-inspired with Global Average Pooling"
+}
