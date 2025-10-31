@@ -52,7 +52,10 @@ coverage.xml
 # Project-specific data and models
 data/
 !data/README.md
+# Ignore all .h5 files...
 models/*.h5
+# ...except for this specific one.
+!models/efficientnet_transfer_final_version.h5
 models/*.pkl
 models/*.pt
 app/uploads/
