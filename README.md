@@ -273,6 +273,64 @@ Track key metrics throughout development:
 3. Add tests for new functionality
 4. Update documentation
 
-## 📄 License
+## � Flask App Deployment
+
+### Local Development
+
+```bash
+# Navigate to app directory
+cd app
+
+# Run Flask development server
+python app.py
+```
+
+Access the application at `http://localhost:5000`
+
+### Production Deployment with Docker
+
+**Build the Docker image:**
+
+```bash
+# Build the image
+docker build -t animal-classifier .
+
+# Run the container
+docker run -p 5000:5000 animal-classifier
+```
+
+**Docker Compose (optional):**
+
+```yaml
+version: "3.8"
+services:
+  animal-classifier:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+```
+
+### API Endpoints
+
+- `GET /` - Upload interface
+- `POST /upload` - Multi-file upload with web form
+- `POST /api/predict` - Single image prediction API
+- `GET /health` - Health check endpoint
+
+### Environment Variables
+
+- `FLASK_ENV` - Set to `production` for deployment
+- `MODEL_PATH` - Path to the trained model file (default: `../models/efficientnet_transfer_final_version.h5`)
+
+### Model Requirements
+
+- Place your trained model in `models/efficientnet_transfer_final_version.h5`
+- Model should be trained on 10 animal classes with Italian labels
+- Expected input size: 224x224 pixels (EfficientNet preprocessing)
+
+## �📄 License
 
 This project is for educational purposes as part of the Ironhack Data Science program.
