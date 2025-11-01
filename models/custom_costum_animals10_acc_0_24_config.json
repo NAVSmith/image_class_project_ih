@@ -1,0 +1,16 @@
+{
+  "model_name": "Custom CNN",
+  "dataset": "Animals10",
+  "input_shape": [
+    128,
+    128,
+    3
+  ],
+  "num_classes": 10,
+  "batch_size": 32,
+  "epochs_trained": 4,
+  "best_val_accuracy": 0.27467483282089233,
+  "final_val_accuracy": 0.24024483561515808,
+  "total_parameters": 1700394,
+  "architecture": "VGG16-inspired with Global Average Pooling"
+}
